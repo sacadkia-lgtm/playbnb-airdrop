@@ -19,7 +19,7 @@
       overflow: hidden; /* hide scrollbars caused by animated bubbles */
     }
 
-    /* Bubble canvas container sits behind the content */
+    /* Bubble container behind the content */
     .bubbles {
       position: fixed;
       inset: 0;
@@ -31,25 +31,23 @@
     .bubble {
       position: absolute;
       border-radius: 50%;
-      /* gold radial look */
-      background: radial-gradient(circle at 35% 30%, #ffd84d 0%, #f1b700 30%, #b8860b 55%, rgba(184,134,11,0.10) 70%, transparent 75%);
-      box-shadow: 0 0 10px rgba(255,215,0,0.12), 0 0 20px rgba(184,134,11,0.06) inset;
-      opacity: 0.9;
+      background: #ffd700; /* solid gold fill */
+      box-shadow: 0 0 6px rgba(255,215,0,0.35), inset 0 0 4px rgba(255,255,255,0.06);
+      opacity: 0.95;
       transform: translate3d(0,0,0) scale(1);
       will-change: transform, opacity;
-      mix-blend-mode: screen;
     }
 
-    /* Floating, slow animation */
-    @keyframes floatY {
-      0%   { transform: translateY(0) scale(1); opacity: 0.9; }
-      50%  { transform: translateY(-18px) scale(1.06); opacity: 1; }
-      100% { transform: translateY(0) scale(1); opacity: 0.9; }
+    /* Faster, subtle floating animations */
+    @keyframes floatY-fast {
+      0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.9; }
+      50%  { transform: translate3d(0, -10px, 0) scale(1.05); opacity: 1; }
+      100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.9; }
     }
-    @keyframes driftX {
-      0%   { transform: translateX(0); }
-      50%  { transform: translateX(8px); }
-      100% { transform: translateX(0); }
+    @keyframes driftX-fast {
+      0%   { transform: translate3d(0,0,0); }
+      50%  { transform: translate3d(6px,0,0); }
+      100% { transform: translate3d(0,0,0); }
     }
 
     /* Center card */
@@ -75,30 +73,29 @@
       backdrop-filter: blur(6px);
     }
 
-    /* Big headline */
+    /* Very large headline and subtext */
     .headline {
-      font-size: clamp(20px, 3.8vw, 40px);
-      font-weight: 700;
-      line-height: 1.05;
+      font-size: clamp(32px, 7vw, 72px);
+      font-weight: 800;
+      line-height: 1.02;
       color: #ffffff;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       letter-spacing: -0.02em;
     }
 
     .subtext {
-      font-size: clamp(13px, 1.8vw, 16px);
-      color: rgba(255,255,255,0.90);
+      font-size: clamp(16px, 2.6vw, 20px);
+      color: rgba(255,255,255,0.95);
       margin-top: 8px;
       max-width: 860px;
       margin-left: auto;
       margin-right: auto;
     }
 
-    /* small footer note */
     .note {
-      margin-top: 22px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.75);
+      margin-top: 20px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.85);
     }
 
     /* Respect reduced motion preferences */
@@ -109,12 +106,12 @@
     /* Responsive spacing */
     @media (max-width: 520px) {
       .card { padding: 28px 18px; }
-      .headline { font-size: 22px; }
+      .headline { font-size: 28px; }
     }
   </style>
 </head>
 <body>
-  <!-- animated gold bubbles -->
+  <!-- animated gold bubbles (small, filled, faster) -->
   <div class="bubbles" id="bubbles"></div>
 
   <!-- main centered card -->
@@ -135,10 +132,10 @@
   </div>
 
   <script>
-    // Create a small number of animated gold bubbles, scattered and subtle.
+    // Create many very small animated gold bubbles, filled circles, a bit faster.
     (function createBubbles() {
       const container = document.getElementById('bubbles');
-      const COUNT = 18; // "very few" as requested
+      const COUNT = 36; // more small fast bubbles but still subtle
       const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
       const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
 
@@ -146,51 +143,48 @@
         const b = document.createElement('div');
         b.className = 'bubble';
 
-        // random size between 8 and 36 px (small and subtle)
-        const size = Math.floor(Math.random() * 28) + 8;
+        // random very small size between 4 and 12 px
+        const size = Math.floor(Math.random() * 9) + 4; // 4..12
         b.style.width = size + 'px';
         b.style.height = size + 'px';
 
-        // random position but avoid centering directly over the card: bias to edges
-        const margin = 6; // percent margin from edges
-        const left = Math.random() * (100 - margin*2) + margin;
-        const top = Math.random() * (100 - margin*2) + margin;
+        // random position across viewport, avoid placing many exactly at center
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
 
         b.style.left = left + 'vw';
         b.style.top = top + 'vh';
 
-        // subtle staggered animation duration and delay
-        const dur = 6 + Math.random() * 8; // 6s - 14s
-        const delay = Math.random() * 6;   // 0 - 6s
-        b.style.animation = `floatY ${dur}s ease-in-out ${delay}s infinite alternate, driftX ${Math.max(6, dur/1.2)}s ease-in-out ${delay/2}s infinite alternate`;
+        // faster animation duration and slight variation
+        const durY = 1.8 + Math.random() * 2.2; // 1.8s - 4.0s
+        const durX = 2.2 + Math.random() * 2.6; // 2.2s - 4.8s
+        const delay = Math.random() * 1.2;      // 0 - 1.2s
+        b.style.animation = `floatY-fast ${durY}s ease-in-out ${delay}s infinite alternate, driftX-fast ${durX}s ease-in-out ${delay/2}s infinite alternate`;
 
-        // varied opacity and blur for depth
-        b.style.opacity = (0.6 + Math.random() * 0.35).toFixed(2);
-        // small transform offset for variety
-        const initialScale = 0.85 + Math.random() * 0.35;
+        // slightly varied opacity for depth
+        b.style.opacity = (0.7 + Math.random() * 0.3).toFixed(2);
+
+        // subtle transform scale randomness
+        const initialScale = 0.9 + Math.random() * 0.3;
         b.style.transform = `scale(${initialScale})`;
 
         container.appendChild(b);
       }
 
-      // Reposition bubbles on resize to keep them roughly in view
+      // On resize, nudge positions slightly to remain visually scattered
       let resizeTimer;
       window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
-          // For simplicity just slightly nudge positions instead of full regen
           const items = container.children;
           for (let i = 0; i < items.length; i++) {
             const el = items[i];
-            const left = parseFloat(el.style.left || '50').toFixed(2);
-            const top = parseFloat(el.style.top || '50').toFixed(2);
-            // small random tweak
-            const nx = Math.min(96, Math.max(4, parseFloat(left) + (Math.random()*6-3)));
-            const ny = Math.min(96, Math.max(4, parseFloat(top) + (Math.random()*6-3)));
-            el.style.left = nx + 'vw';
-            el.style.top = ny + 'vh';
+            const left = Math.min(98, Math.max(2, parseFloat(el.style.left || '50') + (Math.random()*6-3)));
+            const top = Math.min(98, Math.max(2, parseFloat(el.style.top || '50') + (Math.random()*6-3)));
+            el.style.left = left + 'vw';
+            el.style.top = top + 'vh';
           }
-        }, 200);
+        }, 150);
       }, { passive: true });
     })();
   </script>
